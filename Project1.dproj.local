@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2015.01.01 19:33:53.049.pas,C:\Users\Admin\Documents\RAD Studio\Projects\Unit2.pas=C:\Users\Admin\Documents\RAD Studio\Projects\FiguresClass.pas</Transaction>
+    <Transaction>2015.01.01 19:34:01.792.pas,C:\Users\Admin\Documents\RAD Studio\Projects\FiguresClass.pas=C:\Users\Admin\Documents\RAD Studio\Projects\FigureClass.pas</Transaction>
+    <Transaction>2015.01.01 19:34:27.229.pas,C:\Users\Admin\Documents\RAD Studio\Projects\FigureClass.pas=D:\Studies\угату 2 курс 1 сессия\ООП\lab\FigureClass.pas</Transaction>
+    <Transaction>2015.01.01 19:34:28.674.pas,C:\Users\Admin\Documents\RAD Studio\Projects\Unit1.pas=D:\Studies\угату 2 курс 1 сессия\ООП\lab\Unit1.pas</Transaction>
+    <Transaction>2015.01.01 19:34:28.674.dfm,C:\Users\Admin\Documents\RAD Studio\Projects\Unit1.dfm=D:\Studies\угату 2 курс 1 сессия\ООП\lab\Unit1.dfm</Transaction>
+    <Transaction>2015.01.01 19:34:29.744.dproj,C:\Users\Admin\Documents\RAD Studio\Projects\Project1.dproj=D:\Studies\угату 2 курс 1 сессия\ООП\lab\Project1.dproj</Transaction>
+  </Transactions>
+</BorlandProject>
