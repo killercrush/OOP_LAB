@@ -26,8 +26,8 @@ type
     procedure Label1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure N1Click(Sender: TObject);
+    procedure N2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -47,23 +47,6 @@ begin
   FreeAndNil(FigureList);
 end;
 
-procedure TForm1.Button2Click(Sender: TObject);
-var
-  p: TCircle;
-begin
-  p := TCircle.Create(100, 100, $000000, 50, Label1.Canvas);
-  p.Draw;
-  // p.Shift(30, 30);
-  FigureList.AddItem(p);
-
-  // FreeAndNil(p);
-end;
-
-procedure TForm1.Button3Click(Sender: TObject);
-begin
-  FigureList.FirstItem.Item.Destroy;
-end;
-
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FigureList := TList.Create;
@@ -72,7 +55,7 @@ end;
 procedure TForm1.Label1MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  Point: TPoint;
+  Point: TDot;
   Circle: TCircle;
   Square: TSquare;
   ListItem, NextItem: PListItem;
@@ -87,21 +70,21 @@ begin
     end;
     if ToolButton2.Down then
     begin
-      Point := TPoint.Create(X, Y, $0, Label1.Canvas);
+      Point := TDot.Create(X, Y, $0, Label1.Canvas);
       FigureList.AddItem(Point);
-      //Point.Draw;
+      // Point.Draw;
     end;
     if ToolButton3.Down then
     begin
-      Circle := TCircle.Create(X, Y, $0, 50, Label1.Canvas);
+      Circle := TCircle.Create(X, Y, $0, Label1.Canvas, 50);
       FigureList.AddItem(Circle);
-      //Circle.Draw;
+      // Circle.Draw;
     end;
     if ToolButton4.Down then
     begin
-      Square := TSquare.Create(X, Y, $0, 50, Label1.Canvas);
+      Square := TSquare.Create(X, Y, $0, Label1.Canvas, 50);
       FigureList.AddItem(Square);
-      //Square.Draw;
+      // Square.Draw;
     end;
     if FigureList.FirstItem = nil then
       exit;
@@ -112,6 +95,30 @@ begin
       ListItem := NextItem;
     until ListItem = nil;
   end;
+end;
+
+procedure TForm1.N1Click(Sender: TObject);
+var
+  CurPos: TPoint;
+  ListItem, NextItem: PListItem;
+begin
+  GetCursorPos(CurPos);
+  if FigureList.FirstItem = nil then
+    exit;
+  ListItem := FigureList.FirstItem;
+  repeat
+    if ListItem.Item.Selected then
+      ListItem.Item.Shift(CurPos.X - Form1.Left, CurPos.Y - Form1.Top);
+    ListItem := ListItem.NextItem;
+  until ListItem = nil;
+end;
+
+procedure TForm1.N2Click(Sender: TObject);
+var
+  CurPos: TPoint;
+begin
+  GetCursorPos(CurPos);
+  ShowMessage(IntToStr(CurPos.X) + ' ' + IntToStr(CurPos.Y));
 end;
 
 end.

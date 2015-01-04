@@ -1,6 +1,6 @@
-__history
-.dcu
-.exe
-.local
-.identcache
-.res
+*.dcu
+*.exe
+*.local
+*.identcache
+*.res
+/__history

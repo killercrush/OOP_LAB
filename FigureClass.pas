@@ -5,10 +5,10 @@ interface
 uses Graphics, SysUtils;
 
 type
-  PPoint = ^TPoint;
+  PPoint = ^TDot;
   PCircle = ^TCircle;
 
-  TPoint = class
+  TDot = class
   private { приватные поля и методы }
     X: integer; { координата X }
     Y: integer; { координата Y }
@@ -21,33 +21,35 @@ type
   public
     procedure Draw; virtual; { показать }
     procedure Hide; virtual; { стереть }
-    constructor Create(aX, aY, aColor: integer; ACanvas: TCanvas); virtual;
+    constructor Create(aX, aY, aColor: integer; ACanvas: TCanvas;
+      aSize: integer = 1);
     { создать }
     destructor Destroy; override; { удалить }
-    procedure Shift(dX, dY: integer); { подвинуть }
+    procedure Shift(aX, aY: integer); { подвинуть }
     procedure ChangeSize(AScale: double); virtual; abstract; { изменить размер }
     procedure Rotate(AAngle: integer); virtual; abstract; { повернуть }
     function PointInFugure(aX, aY: integer): boolean; virtual;
     property Selected: boolean read FSelected write SetSelection;
   end;
 
-  TCircle = class(TPoint)
+  TCircle = class(TDot)
+  private
+    procedure SetSelection(Value: boolean); override;
   public
     procedure Draw; override;
     procedure Hide; override;
     procedure ChangeSize(AScale: double);
-    constructor Create(aX, aY, aColor, aSize: integer; ACanvas: TCanvas);
     destructor Destroy; override;
     function PointInFugure(aX, aY: integer): boolean; override;
-    procedure SetSelection(Value: boolean); override;
   end;
 
-  TSquare = class(TPoint)
+  TSquare = class(TDot)
+  private
+    procedure SetSelection(Value: boolean); override;
   public
     procedure Draw; override;
     procedure Hide; override;
     procedure ChangeSize(AScale: double);
-    constructor Create(aX, aY, aColor, aSize: integer; ACanvas: TCanvas);
     destructor Destroy; override;
     function PointInFugure(aX, aY: integer): boolean; override;
   end;
@@ -55,7 +57,7 @@ type
   PListItem = ^ListItem;
 
   ListItem = record
-    Item: TPoint;
+    Item: TDot;
     NextItem: PListItem;
   end;
 
@@ -64,42 +66,49 @@ type
     FirstItem: PListItem;
     constructor Create(AFirstItem: PListItem = nil);
     destructor Destroy; override;
-    procedure AddItem(AItem: TPoint);
+    procedure AddItem(AItem: TDot);
   end;
 
 implementation
 
-constructor TPoint.Create(aX, aY, aColor: integer; ACanvas: TCanvas);
+constructor TDot.Create(aX, aY, aColor: integer; ACanvas: TCanvas;
+  aSize: integer = 1);
 begin
   { инициализируем поля экземпляра класса }
   X := aX;
   Y := aY;
   Canvas := ACanvas;
   Color := aColor;
+  Size := aSize;
   Selected := true;
   Draw;
 end;
 
-destructor TPoint.Destroy;
+destructor TDot.Destroy;
 begin
   { сотрем с экрана класс }
+  Selected := False;
   Hide;
   inherited;
 end;
 
-procedure TPoint.Hide;
+procedure TDot.Hide;
+var
+  TmpColor: integer;
 begin
   { нарисуем класс с 0-м цветом (стираем) }
+  TmpColor := Color;
   Color := $FFFFFF;
   Draw;
+  Color := TmpColor;
 end;
 
-function TPoint.PointInFugure(aX, aY: integer): boolean;
+function TDot.PointInFugure(aX, aY: integer): boolean;
 begin
   result := (aX = X) and (aY = Y);
 end;
 
-procedure TPoint.SetSelection(Value: boolean);
+procedure TDot.SetSelection(Value: boolean);
 begin
   if Value = FSelected then
     exit;
@@ -111,15 +120,15 @@ begin
   Canvas.Rectangle(X - 1, Y - 1, X + 2, Y + 2);
 end;
 
-procedure TPoint.Shift(dX, dY: integer);
+procedure TDot.Shift(aX, aY: integer);
 begin
   Hide; { сотрем со старыми координатами }
-  X := X + dX;
-  Y := Y + dY;
+  X := aX;
+  Y := aY;
   Draw; { нарисуем с новыми координатами }
 end;
 
-procedure TPoint.Draw;
+procedure TDot.Draw;
 begin
   { рисуем класс }
   Canvas.Pixels[X, Y] := Color;
@@ -132,14 +141,6 @@ begin
   Hide;
   Size := Round(Size * AScale);
   Draw;
-end;
-
-constructor TCircle.Create(aX, aY, aColor, aSize: integer; ACanvas: TCanvas);
-begin
-  Size := aSize;
-  inherited Create(aX, aY, aColor, ACanvas);
-  //Selected := true;
-  //Draw;
 end;
 
 destructor TCircle.Destroy;
@@ -179,7 +180,7 @@ end;
 
 { TList }
 
-procedure TList.AddItem(AItem: TPoint);
+procedure TList.AddItem(AItem: TDot);
 var
   ListItem, Tmp: PListItem;
 begin
@@ -229,12 +230,6 @@ begin
   Draw;
 end;
 
-constructor TSquare.Create(aX, aY, aColor, aSize: integer; ACanvas: TCanvas);
-begin
-  inherited Create(aX, aY, aColor, ACanvas);
-  Size := aSize;
-end;
-
 destructor TSquare.Destroy;
 begin
 
@@ -258,6 +253,20 @@ function TSquare.PointInFugure(aX, aY: integer): boolean;
 begin
   result := not((aX > X + Size) or (aY > Y + Size) or (aX < X - Size) or
       (aY < Y - Size))
+end;
+
+procedure TSquare.SetSelection(Value: boolean);
+begin
+  if Value = FSelected then
+    exit;
+  FSelected := Value;
+  if FSelected then
+    Canvas.Pen.Color := $00FF00
+  else
+    Canvas.Pen.Color := $FFFFFF;
+  Canvas.Rectangle(X - Size - 1, Y - Size - 1, X + Size + 1, Y + Size + 1);
+  Canvas.Rectangle(X - Size + 1, Y - Size + 1, X + Size - 1, Y + Size - 1);
+
 end;
 
 end.

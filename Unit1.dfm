@@ -57,7 +57,6 @@ object Form1: TForm1
       Height = 25
       Caption = 'Button2'
       TabOrder = 2
-      OnClick = Button2Click
     end
     object Button3: TButton
       Left = 339
@@ -66,7 +65,6 @@ object Form1: TForm1
       Height = 25
       Caption = 'Button3'
       TabOrder = 3
-      OnClick = Button3Click
     end
   end
   object ToolBar1: TToolBar
@@ -119,9 +117,11 @@ object Form1: TForm1
     Top = 32
     object N1: TMenuItem
       Caption = #1055#1077#1088#1077#1084#1077#1089#1090#1080#1090#1100' '#1089#1102#1076#1072
+      OnClick = N1Click
     end
     object N2: TMenuItem
       Caption = #1053#1072#1088#1080
+      OnClick = N2Click
     end
   end
 end
