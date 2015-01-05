@@ -17,11 +17,12 @@ type
     Angle: integer; { угол }
     Canvas: TCanvas; // на нем рисуем
     FSelected: boolean;
-    procedure SetSelection(Value: boolean); virtual;
+    procedure SetSelection(Value: boolean);
+    procedure DrawBorder(AColor: integer); virtual;
   public
     procedure Draw; virtual; { показать }
     procedure Hide; virtual; { стереть }
-    constructor Create(aX, aY, aColor: integer; ACanvas: TCanvas;
+    constructor Create(aX, aY, AColor: integer; ACanvas: TCanvas;
       aSize: integer = 1);
     { создать }
     destructor Destroy; override; { удалить }
@@ -30,13 +31,15 @@ type
     procedure Rotate(AAngle: integer); virtual; abstract; { повернуть }
     function PointInFugure(aX, aY: integer): boolean; virtual;
     property Selected: boolean read FSelected write SetSelection;
+    function Info: string; virtual;
   end;
 
   TCircle = class(TDot)
   private
-    procedure SetSelection(Value: boolean); override;
+    procedure DrawBorder(AColor: integer); override;
   public
     procedure Draw; override;
+
     procedure Hide; override;
     procedure ChangeSize(AScale: double);
     destructor Destroy; override;
@@ -45,7 +48,7 @@ type
 
   TSquare = class(TDot)
   private
-    procedure SetSelection(Value: boolean); override;
+    procedure DrawBorder(AColor: integer); override;
   public
     procedure Draw; override;
     procedure Hide; override;
@@ -71,17 +74,18 @@ type
 
 implementation
 
-constructor TDot.Create(aX, aY, aColor: integer; ACanvas: TCanvas;
+constructor TDot.Create(aX, aY, AColor: integer; ACanvas: TCanvas;
   aSize: integer = 1);
 begin
   { инициализируем пол€ экземпл€ра класса }
   X := aX;
   Y := aY;
   Canvas := ACanvas;
-  Color := aColor;
+  Canvas.Brush.Style := bsClear;
+  Color := AColor;
   Size := aSize;
-  Selected := true;
   Draw;
+  Selected := true;
 end;
 
 destructor TDot.Destroy;
@@ -97,10 +101,17 @@ var
   TmpColor: integer;
 begin
   { нарисуем класс с 0-м цветом (стираем) }
+  if FSelected then
+    DrawBorder($FFFFFF);
   TmpColor := Color;
   Color := $FFFFFF;
   Draw;
   Color := TmpColor;
+end;
+
+function TDot.Info: string;
+begin
+  result := ClassName + ' X:' + IntToStr(X) + ' Y:' + IntToStr(Y);
 end;
 
 function TDot.PointInFugure(aX, aY: integer): boolean;
@@ -114,10 +125,9 @@ begin
     exit;
   FSelected := Value;
   if FSelected then
-    Canvas.Pen.Color := $00FF00
+    DrawBorder($00FF00)
   else
-    Canvas.Pen.Color := $FFFFFF;
-  Canvas.Rectangle(X - 1, Y - 1, X + 2, Y + 2);
+    DrawBorder($FFFFFF);
 end;
 
 procedure TDot.Shift(aX, aY: integer);
@@ -126,12 +136,20 @@ begin
   X := aX;
   Y := aY;
   Draw; { нарисуем с новыми координатами }
+  if FSelected then
+    DrawBorder($00FF00);
 end;
 
 procedure TDot.Draw;
 begin
   { рисуем класс }
   Canvas.Pixels[X, Y] := Color;
+end;
+
+procedure TDot.DrawBorder(AColor: integer);
+begin
+  Canvas.Pen.Color := AColor;
+  Canvas.Rectangle(X - 1, Y - 1, X + 2, Y + 2);
 end;
 
 { TCircle }
@@ -155,6 +173,13 @@ begin
   Canvas.Ellipse(X - Size, Y - Size, X + Size, Y + Size);
 end;
 
+procedure TCircle.DrawBorder(AColor: integer);
+begin
+  Canvas.Pen.Color := AColor;
+  Canvas.Ellipse(X - Size - 1, Y - Size - 1, X + Size + 1, Y + Size + 1);
+  Canvas.Ellipse(X - Size + 1, Y - Size + 1, X + Size - 1, Y + Size - 1);
+end;
+
 procedure TCircle.Hide;
 begin
   inherited;
@@ -163,19 +188,6 @@ end;
 function TCircle.PointInFugure(aX, aY: integer): boolean;
 begin
   result := (((aX - X) * (aX - X) + (aY - Y) * (aY - Y)) <= Size * Size);
-end;
-
-procedure TCircle.SetSelection(Value: boolean);
-begin
-  if Value = FSelected then
-    exit;
-  FSelected := Value;
-  if FSelected then
-    Canvas.Pen.Color := $00FF00
-  else
-    Canvas.Pen.Color := $FFFFFF;
-  Canvas.Ellipse(X - Size - 1, Y - Size - 1, X + Size + 1, Y + Size + 1);
-  Canvas.Ellipse(X - Size + 1, Y - Size + 1, X + Size - 1, Y + Size - 1);
 end;
 
 { TList }
@@ -243,6 +255,13 @@ begin
   Canvas.Rectangle(X - Size, Y - Size, X + Size, Y + Size);
 end;
 
+procedure TSquare.DrawBorder(AColor: integer);
+begin
+  Canvas.Pen.Color := AColor;
+  Canvas.Rectangle(X - Size - 1, Y - Size - 1, X + Size + 1, Y + Size + 1);
+  Canvas.Rectangle(X - Size + 1, Y - Size + 1, X + Size - 1, Y + Size - 1);
+end;
+
 procedure TSquare.Hide;
 begin
   inherited;
@@ -253,20 +272,6 @@ function TSquare.PointInFugure(aX, aY: integer): boolean;
 begin
   result := not((aX > X + Size) or (aY > Y + Size) or (aX < X - Size) or
       (aY < Y - Size))
-end;
-
-procedure TSquare.SetSelection(Value: boolean);
-begin
-  if Value = FSelected then
-    exit;
-  FSelected := Value;
-  if FSelected then
-    Canvas.Pen.Color := $00FF00
-  else
-    Canvas.Pen.Color := $FFFFFF;
-  Canvas.Rectangle(X - Size - 1, Y - Size - 1, X + Size + 1, Y + Size + 1);
-  Canvas.Rectangle(X - Size + 1, Y - Size + 1, X + Size - 1, Y + Size - 1);
-
 end;
 
 end.
