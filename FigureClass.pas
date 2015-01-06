@@ -2,7 +2,7 @@ unit FigureClass;
 
 interface
 
-uses Graphics, SysUtils;
+uses Graphics, SysUtils, Dialogs;
 
 type
   PPoint = ^TDot;
@@ -23,12 +23,12 @@ type
     procedure Draw; virtual; { показать }
     procedure Hide; virtual; { стереть }
     constructor Create(aX, aY, AColor: integer; ACanvas: TCanvas;
-      aSize: integer = 1);
+      aSize: integer = 1; aAngle: integer = 0);
     { создать }
     destructor Destroy; override; { удалить }
     procedure Shift(aX, aY: integer); { подвинуть }
-    procedure ChangeSize(AScale: double); virtual; abstract; { изменить размер }
-    procedure Rotate(AAngle: integer); virtual; abstract; { повернуть }
+    procedure ChangeSize(aSize: integer); virtual; { изменить размер }
+    procedure Rotate(aAngle: integer); virtual; abstract; { повернуть }
     function PointInFugure(aX, aY: integer): boolean; virtual;
     property Selected: boolean read FSelected write SetSelection;
     function Info: string; virtual;
@@ -39,10 +39,6 @@ type
     procedure DrawBorder(AColor: integer); override;
   public
     procedure Draw; override;
-
-    procedure Hide; override;
-    procedure ChangeSize(AScale: double);
-    destructor Destroy; override;
     function PointInFugure(aX, aY: integer): boolean; override;
   end;
 
@@ -52,7 +48,18 @@ type
   public
     procedure Draw; override;
     procedure Hide; override;
-    procedure ChangeSize(AScale: double);
+    procedure ChangeSize(aSize: integer); override;
+    destructor Destroy; override;
+    function PointInFugure(aX, aY: integer): boolean; override;
+  end;
+
+  TStar = class(TDot)
+  private
+    procedure DrawBorder(AColor: integer); override;
+  public
+    procedure Draw; override;
+    procedure Hide; override;
+    procedure ChangeSize(aSize: integer); override;
     destructor Destroy; override;
     function PointInFugure(aX, aY: integer): boolean; override;
   end;
@@ -70,12 +77,20 @@ type
     constructor Create(AFirstItem: PListItem = nil);
     destructor Destroy; override;
     procedure AddItem(AItem: TDot);
+    procedure DeleteSelectedItem;
   end;
 
 implementation
 
+procedure TDot.ChangeSize(aSize: integer);
+begin
+  Hide;
+  Size := aSize;
+  Draw;
+end;
+
 constructor TDot.Create(aX, aY, AColor: integer; ACanvas: TCanvas;
-  aSize: integer = 1);
+  aSize: integer = 1; aAngle: integer = 0);
 begin
   { инициализируем поля экземпляра класса }
   X := aX;
@@ -84,6 +99,7 @@ begin
   Canvas.Brush.Style := bsClear;
   Color := AColor;
   Size := aSize;
+  Angle := aAngle;
   Draw;
   Selected := true;
 end;
@@ -154,18 +170,6 @@ end;
 
 { TCircle }
 
-procedure TCircle.ChangeSize(AScale: double);
-begin
-  Hide;
-  Size := Round(Size * AScale);
-  Draw;
-end;
-
-destructor TCircle.Destroy;
-begin
-  inherited;
-end;
-
 procedure TCircle.Draw;
 begin
 
@@ -178,11 +182,6 @@ begin
   Canvas.Pen.Color := AColor;
   Canvas.Ellipse(X - Size - 1, Y - Size - 1, X + Size + 1, Y + Size + 1);
   Canvas.Ellipse(X - Size + 1, Y - Size + 1, X + Size - 1, Y + Size - 1);
-end;
-
-procedure TCircle.Hide;
-begin
-  inherited;
 end;
 
 function TCircle.PointInFugure(aX, aY: integer): boolean;
@@ -216,6 +215,32 @@ begin
   FirstItem := AFirstItem;
 end;
 
+procedure TList.DeleteSelectedItem;
+var
+  ListItem, PrevItem, NextItem: PListItem;
+begin
+  if FirstItem <> nil then
+  begin
+    ListItem := FirstItem;
+    PrevItem := nil;
+    repeat
+      NextItem := ListItem.NextItem;
+      if ListItem.Item.Selected then
+      begin
+        if PrevItem <> nil then
+          PrevItem.NextItem := ListItem.NextItem
+        else
+          FirstItem := ListItem.NextItem;
+        FreeAndNil(ListItem.Item);
+        Dispose(ListItem);
+      end;
+      PrevItem := ListItem;
+      ListItem := NextItem;
+    until ListItem = nil;
+  end;
+
+end;
+
 destructor TList.Destroy;
 var
   ListItem, NextItem: PListItem;
@@ -235,10 +260,10 @@ end;
 
 { TSquare }
 
-procedure TSquare.ChangeSize(AScale: double);
+procedure TSquare.ChangeSize(aSize: integer);
 begin
   Hide;
-  Size := Round(Size * AScale);
+  Size := aSize;
   Draw;
 end;
 
@@ -272,6 +297,158 @@ function TSquare.PointInFugure(aX, aY: integer): boolean;
 begin
   result := not((aX > X + Size) or (aY > Y + Size) or (aX < X - Size) or
       (aY < Y - Size))
+end;
+
+{ TStar }
+
+procedure TStar.ChangeSize(aSize: integer);
+begin
+
+end;
+
+destructor TStar.Destroy;
+begin
+
+  inherited;
+end;
+
+procedure TStar.Draw;
+var
+  i, vX, vY, AngleStep, VertexCount, VertexHeight: integer;
+begin
+  Canvas.Pen.Color := Color;
+  VertexCount := 5;
+  VertexHeight := Round(0.6 * Size);
+  vX := X + Round(Cos(Angle / 180 * pi) * Size);
+  vY := Y - Round(Sin(Angle / 180 * pi) * Size);
+  Canvas.MoveTo(vX, vY);
+  AngleStep := Round(360 / (VertexCount * 2));
+  for i := 1 to VertexCount * 2 do
+  begin
+    if (i mod 2 = 0) then
+    begin
+      vX := X + Round(Cos((AngleStep * i + Angle) / 180 * pi) * Size);
+      vY := Y - Round(Sin((AngleStep * i + Angle) / 180 * pi) * Size);
+    end
+    else
+    begin
+      vX := X + Round(Cos((AngleStep * i + Angle) / 180 * pi) *
+          (Size - VertexHeight));
+      vY := Y - Round(Sin((AngleStep * i + Angle) / 180 * pi) *
+          (Size - VertexHeight));
+    end;
+    Canvas.LineTo(vX, vY);
+  end;
+end;
+
+procedure TStar.DrawBorder(AColor: integer);
+var
+  i, vX, vY, AngleStep, VertexCount, VertexHeight, inSize, outSize: integer;
+begin
+  inSize := Size - 4;
+  outSize := Size + 4;
+  Canvas.Pen.Color := AColor;
+  VertexCount := 5;
+  VertexHeight := Round(0.6 * inSize);
+  vX := X + Round(Cos(Angle / 180 * pi) * inSize);
+  vY := Y - Round(Sin(Angle / 180 * pi) * inSize);
+  Canvas.MoveTo(vX, vY);
+  AngleStep := Round(360 / (VertexCount * 2));
+  for i := 1 to VertexCount * 2 do
+  begin
+    if (i mod 2 = 0) then
+    begin
+      vX := X + Round(Cos((AngleStep * i + Angle) / 180 * pi) * inSize);
+      vY := Y - Round(Sin((AngleStep * i + Angle) / 180 * pi) * inSize);
+    end
+    else
+    begin
+      vX := X + Round(Cos((AngleStep * i + Angle) / 180 * pi) *
+          (inSize - VertexHeight));
+      vY := Y - Round(Sin((AngleStep * i + Angle) / 180 * pi) *
+          (inSize - VertexHeight));
+    end;
+    Canvas.LineTo(vX, vY);
+  end;
+  VertexHeight := Round(0.6 * outSize);
+  vX := X + Round(Cos(Angle / 180 * pi) * outSize);
+  vY := Y - Round(Sin(Angle / 180 * pi) * outSize);
+  Canvas.MoveTo(vX, vY);
+  AngleStep := Round(360 / (VertexCount * 2));
+  for i := 1 to VertexCount * 2 do
+  begin
+    if (i mod 2 = 0) then
+    begin
+      vX := X + Round(Cos((AngleStep * i + Angle) / 180 * pi) * outSize);
+      vY := Y - Round(Sin((AngleStep * i + Angle) / 180 * pi) * outSize);
+    end
+    else
+    begin
+      vX := X + Round(Cos((AngleStep * i + Angle) / 180 * pi) *
+          (outSize - VertexHeight));
+      vY := Y - Round(Sin((AngleStep * i + Angle) / 180 * pi) *
+          (outSize - VertexHeight));
+    end;
+    Canvas.LineTo(vX, vY);
+  end;
+end;
+
+procedure TStar.Hide;
+begin
+  inherited;
+
+end;
+
+function Intersection(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2: real): boolean;
+var
+  v1, v2, v3, v4: real;
+begin
+  v1 := (bx2 - bx1) * (ay1 - by1) - (by2 - by1) * (ax1 - bx1);
+  v2 := (bx2 - bx1) * (ay2 - by1) - (by2 - by1) * (ax2 - bx1);
+  v3 := (ax2 - ax1) * (by1 - ay1) - (ay2 - ay1) * (bx1 - ax1);
+  v4 := (ax2 - ax1) * (by2 - ay1) - (ay2 - ay1) * (bx2 - ax1);
+  Intersection := (v1 * v2 < 0) and (v3 * v4 < 0);
+end;
+
+function TStar.PointInFugure(aX, aY: integer): boolean;
+var
+  i, j, x1, x2, y1, y2, x0, y0: integer;
+  vX, vY, AngleStep, VertexCount, VertexHeight, IntersectCount: integer;
+begin
+  IntersectCount := 0;
+  x0 := aX + 3000;
+  y0 := aY + 3000;
+  VertexCount := 5;
+  VertexHeight := Round(0.6 * Size);
+  vX := X + Round(Cos(Angle / 180 * pi) * Size);
+  vY := Y - Round(Sin(Angle / 180 * pi) * Size);
+  x1 := vX;
+  y1 := vY;
+  Canvas.MoveTo(vX, vY);
+  AngleStep := Round(360 / (VertexCount * 2));
+  for j := 1 to VertexCount * 2 do
+  begin
+    if (j mod 2 = 0) then
+    begin
+      vX := X + Round(Cos((AngleStep * j + Angle) / 180 * pi) * Size);
+      vY := Y - Round(Sin((AngleStep * j + Angle) / 180 * pi) * Size);
+    end
+    else
+    begin
+      vX := X + Round(Cos((AngleStep * j + Angle) / 180 * pi) *
+          (Size - VertexHeight));
+      vY := Y - Round(Sin((AngleStep * j + Angle) / 180 * pi) *
+          (Size - VertexHeight));
+    end;
+    x2 := vX;
+    y2 := vY;
+    if Intersection(x0, y0, aX, aY, x1, y1, x2, y2) then
+      Inc(IntersectCount);
+    Canvas.MoveTo(vX, vY);
+    x1 := vX;
+    y1 := vY;
+  end;
+  result := (IntersectCount mod 2) <> 0;
 end;
 
 end.

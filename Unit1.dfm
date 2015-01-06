@@ -1,7 +1,7 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  Caption = #1051#1072#1073#1072#1088#1072#1090#1086#1088#1085#1072#1103' '#1054#1054#1055
+  Caption = #1051#1072#1073#1086#1088#1072#1090#1086#1088#1085#1072#1103' '#1054#1054#1055
   ClientHeight = 466
   ClientWidth = 894
   Color = clWindow
@@ -23,8 +23,6 @@ object Form1: TForm1
     Height = 36
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 608
-    ExplicitWidth = 678
     object Button1: TButton
       Left = 805
       Top = 6
@@ -39,13 +37,25 @@ object Form1: TForm1
     Left = 0
     Top = 0
     Width = 894
-    Height = 19
-    AutoSize = True
+    Height = 25
+    ParentCustomHint = False
     ButtonHeight = 19
     ButtonWidth = 63
     Caption = #1042#1099#1076#1077#1083#1080#1090#1100
+    DoubleBuffered = False
+    Flat = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
     List = True
+    ParentColor = False
+    ParentDoubleBuffered = False
+    ParentFont = False
+    ParentShowHint = False
     ShowCaptions = True
+    ShowHint = False
     TabOrder = 1
     Transparent = False
     object ToolButton1: TToolButton
@@ -80,16 +90,25 @@ object Form1: TForm1
       ImageIndex = 3
       Style = tbsCheck
     end
+    object ToolButton5: TToolButton
+      Left = 252
+      Top = 0
+      Caption = #1047#1074#1077#1079#1076#1072
+      Grouped = True
+      ImageIndex = 4
+      Style = tbsCheck
+    end
   end
   object Panel2: TPanel
     Left = 709
-    Top = 19
+    Top = 25
     Width = 185
-    Height = 411
+    Height = 405
     Align = alRight
     ParentBackground = False
     TabOrder = 2
-    ExplicitTop = 13
+    ExplicitTop = 19
+    ExplicitHeight = 411
     object Label1: TLabel
       Left = 152
       Top = 87
@@ -147,23 +166,46 @@ object Form1: TForm1
       Height = 21
       NumbersOnly = True
       TabOrder = 3
-      Text = '0'
+      Text = '90'
+    end
+    object Button3: TButton
+      Left = 64
+      Top = 118
+      Width = 75
+      Height = 25
+      Caption = #1059#1076#1072#1083#1080#1090#1100
+      TabOrder = 4
+      OnClick = Button3Click
+    end
+    object Button4: TButton
+      Left = 48
+      Top = 248
+      Width = 75
+      Height = 25
+      Caption = 'Button4'
+      TabOrder = 5
+      OnClick = Button4Click
+    end
+    object Button5: TButton
+      Left = 64
+      Top = 320
+      Width = 75
+      Height = 25
+      Caption = 'Button5'
+      TabOrder = 6
+      OnClick = Button5Click
     end
   end
   object PopupMenu1: TPopupMenu
-    Left = 584
+    Left = 656
     Top = 32
     object N1: TMenuItem
       Caption = #1055#1077#1088#1077#1084#1077#1089#1090#1080#1090#1100' '#1089#1102#1076#1072
       OnClick = N1Click
     end
-    object N2: TMenuItem
-      Caption = #1053#1072#1088#1080
-      OnClick = N2Click
-    end
   end
   object ColorDialog1: TColorDialog
-    Left = 600
-    Top = 88
+    Left = 656
+    Top = 80
   end
 end
