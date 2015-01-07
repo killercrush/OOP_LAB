@@ -107,8 +107,6 @@ object Form1: TForm1
     Align = alRight
     ParentBackground = False
     TabOrder = 2
-    ExplicitTop = 19
-    ExplicitHeight = 411
     object Label1: TLabel
       Left = 152
       Top = 87
@@ -133,7 +131,7 @@ object Form1: TForm1
       Height = 13
       Caption = #1059#1075#1086#1083
     end
-    object Edit1: TEdit
+    object edInfo: TEdit
       Left = 16
       Top = 6
       Width = 161
@@ -141,41 +139,44 @@ object Form1: TForm1
       ReadOnly = True
       TabOrder = 0
     end
-    object Edit2: TEdit
+    object edSize: TEdit
       Left = 56
       Top = 33
       Width = 121
       Height = 21
+      MaxLength = 3
       NumbersOnly = True
       TabOrder = 2
       Text = '50'
+      OnChange = edSizeChange
     end
-    object Button2: TButton
+    object bColor: TButton
       Left = 64
       Top = 87
       Width = 75
       Height = 25
       Caption = #1062#1074#1077#1090
       TabOrder = 1
-      OnClick = Button2Click
+      OnClick = bColorClick
     end
-    object Edit3: TEdit
+    object edAngle: TEdit
       Left = 56
       Top = 60
       Width = 121
       Height = 21
+      MaxLength = 3
       NumbersOnly = True
       TabOrder = 3
       Text = '90'
     end
-    object Button3: TButton
+    object bDelete: TButton
       Left = 64
       Top = 118
       Width = 75
       Height = 25
       Caption = #1059#1076#1072#1083#1080#1090#1100
       TabOrder = 4
-      OnClick = Button3Click
+      OnClick = bDeleteClick
     end
     object Button4: TButton
       Left = 48

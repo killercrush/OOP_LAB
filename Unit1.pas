@@ -18,15 +18,15 @@ type
     ToolButton4: TToolButton;
     Button1: TButton;
     Panel2: TPanel;
-    Edit1: TEdit;
-    Edit2: TEdit;
-    Button2: TButton;
+    edInfo: TEdit;
+    edSize: TEdit;
+    bColor: TButton;
     ColorDialog1: TColorDialog;
     Label1: TLabel;
     Label2: TLabel;
-    Edit3: TEdit;
+    edAngle: TEdit;
     Label3: TLabel;
-    Button3: TButton;
+    bDelete: TButton;
     Button4: TButton;
     Button5: TButton;
     ToolButton5: TToolButton;
@@ -35,11 +35,11 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
     procedure N1Click(Sender: TObject);
-    procedure N2Click(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
-    procedure Button3Click(Sender: TObject);
+    procedure bColorClick(Sender: TObject);
+    procedure bDeleteClick(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure edSizeChange(Sender: TObject);
   private
     { Private declarations }
   public
@@ -65,13 +65,13 @@ begin
   FigureList := TList.Create;
 end;
 
-procedure TForm1.Button2Click(Sender: TObject);
+procedure TForm1.bColorClick(Sender: TObject);
 begin
   if ColorDialog1.Execute then
     Label1.Color := ColorDialog1.Color;
 end;
 
-procedure TForm1.Button3Click(Sender: TObject);
+procedure TForm1.bDeleteClick(Sender: TObject);
 begin
   if not Assigned(FigureList) then
     FigureList := TList.Create;
@@ -79,52 +79,79 @@ begin
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
-var nx, ny: integer;
+var
+  nx, ny: Integer;
 begin
-Form1.Canvas.MoveTo(300, 300);
-nx := 300; ny := 300;
-nx := nx + Round(Cos(36 / 180 * pi) * 100);  ny := ny - Round(Sin(36 / 180 * pi) * 100);
-Form1.Canvas.LineTo(nx, ny);
-nx := nx + Round(Cos(252 / 180 * pi) * 100);  ny := ny - Round(Sin(252 / 180 * pi) * 100);
-Form1.Canvas.LineTo(nx, ny);
-nx := nx + Round(Cos(108 / 180 * pi) * 100);  ny := ny - Round(Sin(108 / 180 * pi) * 100);
-Form1.Canvas.LineTo(nx, ny);
-nx := nx + Round(Cos(324 / 180 * pi) * 100);  ny := ny - Round(Sin(324 / 180 * pi) * 100);
-Form1.Canvas.LineTo(nx, ny);
-nx := nx + Round(Cos(180 / 180 * pi) * 100);  ny := ny - Round(Sin(180 / 180 * pi) * 100);
-Form1.Canvas.LineTo(nx, ny);
+  // Form1.Canvas.MoveTo(300, 300);
+  // nx := 300; ny := 300;
+  // nx := nx + Round(Cos(36 / 180 * pi) * 100);  ny := ny - Round(Sin(36 / 180 * pi) * 100);
+  // Form1.Canvas.LineTo(nx, ny);
+  // nx := nx + Round(Cos(252 / 180 * pi) * 100);  ny := ny - Round(Sin(252 / 180 * pi) * 100);
+  // Form1.Canvas.LineTo(nx, ny);
+  // nx := nx + Round(Cos(108 / 180 * pi) * 100);  ny := ny - Round(Sin(108 / 180 * pi) * 100);
+  // Form1.Canvas.LineTo(nx, ny);
+  // nx := nx + Round(Cos(324 / 180 * pi) * 100);  ny := ny - Round(Sin(324 / 180 * pi) * 100);
+  // Form1.Canvas.LineTo(nx, ny);
+  // nx := nx + Round(Cos(180 / 180 * pi) * 100);  ny := ny - Round(Sin(180 / 180 * pi) * 100);
+  // Form1.Canvas.LineTo(nx, ny);
+  Form1.Canvas.MoveTo(300, 300);
+  Form1.Canvas.LineTo(301, 301);
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);
-var i, r, x, y, step, angle: integer;
-Vertex: TPoint;
-VertexCount: integer;
+var
+  i, r, X, Y, step, angle: Integer;
+  Vertex: TPoint;
+  VertexCount: Integer;
 
 begin
-r := 100;
-VertexCount := 5;
-Form1.Canvas.Brush.Style := bsClear;
-//Form1.Canvas.Ellipse(300 - r, 300 - r, 300 + r, 300 + r);
-//Form1.Canvas.Ellipse(300 - Round(r / 3), 300 - Round(r / 3), 300 + Round(r / 3), 300 + Round(r / 3));
-Vertex.X := 300; Vertex.Y := 300 + r;
-x := Vertex.X; y := Vertex.Y;
-Form1.Canvas.MoveTo(Vertex.X, Vertex.Y);
-step := Round(360 / (VertexCount * 2));
-angle := 270;
-for i :=  1 to VertexCount * 2 do
+  r := 100;
+  VertexCount := 5;
+  Form1.Canvas.Brush.Style := bsClear;
+  // Form1.Canvas.Ellipse(300 - r, 300 - r, 300 + r, 300 + r);
+  // Form1.Canvas.Ellipse(300 - Round(r / 3), 300 - Round(r / 3), 300 + Round(r / 3), 300 + Round(r / 3));
+  Vertex.X := 300;
+  Vertex.Y := 300 + r;
+  X := Vertex.X;
+  Y := Vertex.Y;
+  Form1.Canvas.MoveTo(Vertex.X, Vertex.Y);
+  step := Round(360 / (VertexCount * 2));
+  angle := 270;
+  for i := 1 to VertexCount * 2 do
   begin
-  if (i mod 2 = 0) then
-  begin
-   x := 300 + Round(Cos((step * i + angle) / 180 * pi) * r);  y := 300 - Round(Sin((step * i + angle) / 180 * pi) * r);
-  end
-   else
-   begin
-   x := 300 + Round(Cos((step * i + angle) / 180 * pi) * (r / 3));  y := 300 - Round(Sin((step * i + angle) / 180 * pi) * (r / 3));
-   end;
+    if (i mod 2 = 0) then
+    begin
+      X := 300 + Round(Cos((step * i + angle) / 180 * pi) * r);
+      Y := 300 - Round(Sin((step * i + angle) / 180 * pi) * r);
+    end
+    else
+    begin
+      X := 300 + Round(Cos((step * i + angle) / 180 * pi) * (r / 3));
+      Y := 300 - Round(Sin((step * i + angle) / 180 * pi) * (r / 3));
+    end;
 
-  Sleep(50);
-  Form1.Canvas.LineTo(x, y);
+    Sleep(50);
+    Form1.Canvas.LineTo(X, Y);
   end;
+end;
+
+procedure TForm1.edSizeChange(Sender: TObject);
+var
+  ListItem: PListItem;
+begin
+  if edSize.Text = '' then
+    edSize.Text := '0';
+  if FigureList.FirstItem = nil then
+    exit;
+  ListItem := FigureList.FirstItem;
+  repeat
+    if ListItem.Item.Selected then
+    begin
+      ListItem.Item.Size := StrToInt(edSize.Text);
+      exit;
+    end;
+    ListItem := ListItem.NextItem;
+  until ListItem = nil;
 end;
 
 procedure TForm1.Form1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -135,6 +162,7 @@ var
   Square: TSquare;
   Star: TStar;
   ListItem, NextItem: PListItem;
+  f: boolean;
 begin
   ClickPos.X := X;
   ClickPos.Y := Y;
@@ -150,33 +178,40 @@ begin
     begin
       Point := TDot.Create(X, Y, Label1.Color, Form1.Canvas);
       FigureList.AddItem(Point);
-      // Point.Draw;
     end;
     if ToolButton3.Down then
     begin
-      Circle := TCircle.Create(X, Y, Label1.Color, Form1.Canvas, StrToInt(Edit2.Text));
+      Circle := TCircle.Create(X, Y, Label1.Color, Form1.Canvas,
+        StrToInt(edSize.Text));
       FigureList.AddItem(Circle);
-      // Circle.Draw;
     end;
     if ToolButton4.Down then
     begin
-      Square := TSquare.Create(X, Y, Label1.Color, Form1.Canvas, StrToInt(Edit2.Text));
+      Square := TSquare.Create(X, Y, Label1.Color, Form1.Canvas,
+        StrToInt(edSize.Text), StrToInt(edAngle.Text));
       FigureList.AddItem(Square);
-      // Square.Draw;
     end;
-  if ToolButton5.Down then
+    if ToolButton5.Down then
     begin
-      Star := TStar.Create(X, Y, Label1.Color, Form1.Canvas, StrToInt(Edit2.Text), StrToInt(Edit3.Text));
+      Star := TStar.Create(X, Y, Label1.Color, Form1.Canvas,
+        StrToInt(edSize.Text), StrToInt(edAngle.Text));
       FigureList.AddItem(Star);
-      // Square.Draw;
     end;
     if FigureList.FirstItem = nil then
       exit;
     ListItem := FigureList.FirstItem;
+    f := false;
     repeat
       NextItem := ListItem.NextItem;
-      ListItem.Item.Selected := ListItem.Item.PointInFugure(X, Y);
-      if ListItem.Item.Selected then Edit1.Text := ListItem.Item.Info;
+      if ListItem.Item.PointInFugure(X, Y) and (not f) then
+      begin
+        ListItem.Item.Selected := true;
+        f := true;
+      end
+      else
+        ListItem.Item.Selected := false;
+      if ListItem.Item.Selected then
+        edInfo.Text := ListItem.Item.Info;
       ListItem := NextItem;
     until ListItem = nil;
   end;
@@ -194,14 +229,6 @@ begin
       ListItem.Item.Shift(ClickPos.X, ClickPos.Y);
     ListItem := ListItem.NextItem;
   until ListItem = nil;
-end;
-
-procedure TForm1.N2Click(Sender: TObject);
-var
-  CurPos: TPoint;
-begin
-  GetCursorPos(CurPos);
-  ShowMessage(IntToStr(CurPos.X) + ' ' + IntToStr(CurPos.Y));
 end;
 
 end.
