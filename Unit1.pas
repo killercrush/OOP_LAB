@@ -8,7 +8,6 @@ uses
 
 type
   TForm1 = class(TForm)
-    Panel1: TPanel;
     PopupMenu1: TPopupMenu;
     N1: TMenuItem;
     ToolBar1: TToolBar;
@@ -34,6 +33,7 @@ type
     bOKAngle: TButton;
     bColorOk: TButton;
     Label4: TLabel;
+    Timer1: TTimer;
     procedure Button1Click(Sender: TObject);
     procedure Form1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -47,6 +47,9 @@ type
     procedure bOKSizeClick(Sender: TObject);
     procedure bOKAngleClick(Sender: TObject);
     procedure bColorOkClick(Sender: TObject);
+    procedure edAngleExit(Sender: TObject);
+    procedure RefreshInfo(Figure: TDot);
+    procedure CanvasChange(Sender: TObject);
   private
     { Private declarations }
   public
@@ -70,6 +73,30 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FigureList := TList.Create;
+  //Form1.Canvas.OnChange := Form1.CanvasChange;
+end;
+
+procedure TForm1.CanvasChange(Sender: TObject);
+var
+  ListItem: PListItem;
+begin
+  if not Assigned(FigureList) then
+    FigureList := TList.Create;
+  if FigureList.IsEmpty then
+    exit;
+  Form1.Canvas.OnChange := nil;
+  FigureList.Reset;
+  ListItem := FigureList.CurrentItem;
+  repeat
+    ListItem.Item.OnDraw := nil;
+    ListItem.Item.Draw;
+    ListItem.Item.DrawSelection;
+    ListItem.Item.OnDraw := CanvasChange;
+    if ListItem.Item.Selected then
+      FigureList.CurrentItem := ListItem;
+    ListItem := ListItem.NextItem;
+  until ListItem = nil;
+  Form1.Canvas.OnChange := Form1.CanvasChange;
 end;
 
 procedure TForm1.bColorClick(Sender: TObject);
@@ -81,13 +108,15 @@ end;
 procedure TForm1.bColorOkClick(Sender: TObject);
 begin
   if not FigureList.IsEmpty then
-    FigureList.CurrentItem.Item.Color := ColorDialog1.Color;
+    FigureList.CurrentItem.Item.Color := Label1.Color;
 end;
 
 procedure TForm1.bDeleteClick(Sender: TObject);
 begin
   if not FigureList.IsEmpty then
     FigureList.DeleteItem(FigureList.CurrentItem);
+  FigureList.Reset;
+  edInfo.Clear;
 end;
 
 procedure TForm1.bOKAngleClick(Sender: TObject);
@@ -159,10 +188,24 @@ begin
   end;
 end;
 
+procedure TForm1.edAngleExit(Sender: TObject);
+begin
+  if edAngle.Text = '' then
+    edAngle.Text := '0';
+end;
+
 procedure TForm1.edSizeExit(Sender: TObject);
 begin
   if edSize.Text = '' then
     edSize.Text := '0';
+end;
+
+procedure TForm1.RefreshInfo(Figure: TDot);
+begin
+  edSize.Text := IntToStr(Figure.Size);
+  edAngle.Text := IntToStr(Figure.Angle);
+  Label1.Color := Figure.Color;
+  edInfo.Text := Figure.Info;
 end;
 
 procedure TForm1.Form1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -193,7 +236,7 @@ begin
         begin
           ListItem.Item.Selected := ListItem.Item.PointInFugure(X, Y);
           FigureList.CurrentItem := ListItem;
-          edInfo.Text := ListItem.Item.Info;
+          RefreshInfo(ListItem.Item);
           FigureSelected := ListItem.Item.Selected;
         end
         else
@@ -205,33 +248,38 @@ begin
     begin
       if not FigureList.IsEmpty then
         FigureList.CurrentItem.Item.Selected := false;
-      Point := TDot.Create(X, Y, Label1.Color, Form1.Canvas);
+      Point := TDot.Create(X, Y, Label1.Color, Canvas);
       FigureList.AddItem(Point);
+      RefreshInfo(Point);
     end;
     if ToolButton3.Down then
     begin
       if not FigureList.IsEmpty then
         FigureList.CurrentItem.Item.Selected := false;
-      Circle := TCircle.Create(X, Y, Label1.Color, Form1.Canvas,
+      Circle := TCircle.Create(X, Y, Label1.Color, Canvas,
         StrToInt(edSize.Text));
       FigureList.AddItem(Circle);
+      RefreshInfo(Circle);
     end;
     if ToolButton4.Down then
     begin
       if not FigureList.IsEmpty then
         FigureList.CurrentItem.Item.Selected := false;
-      Square := TSquare.Create(X, Y, Label1.Color, Form1.Canvas,
+      Square := TSquare.Create(X, Y, Label1.Color, Canvas,
         StrToInt(edSize.Text), StrToInt(edAngle.Text));
       FigureList.AddItem(Square);
+      RefreshInfo(Square);
     end;
     if ToolButton5.Down then
     begin
       if not FigureList.IsEmpty then
         FigureList.CurrentItem.Item.Selected := false;
-      Star := TStar.Create(X, Y, Label1.Color, Form1.Canvas,
-        StrToInt(edSize.Text), StrToInt(edAngle.Text));
+      Star := TStar.Create(X, Y, Label1.Color, Canvas, StrToInt(edSize.Text),
+        StrToInt(edAngle.Text));
       FigureList.AddItem(Star);
+      RefreshInfo(Star);
     end;
+    FigureList.CurrentItem.Item.OnDraw := CanvasChange;
   end;
 end;
 
@@ -239,6 +287,7 @@ procedure TForm1.N1Click(Sender: TObject);
 begin
   if not FigureList.IsEmpty then
     FigureList.CurrentItem.Item.Shift(ClickPos.X, ClickPos.Y);
+  // Form1.CanvasChange(self);
 end;
 
 end.

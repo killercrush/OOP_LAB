@@ -8,6 +8,8 @@ type
   PPoint = ^TDot;
   PCircle = ^TCircle;
 
+  TDrawEvent = procedure (Sender: TObject) of object;
+
   TDot = class
   private { приватные поля и методы }
     X: integer; { координата X }
@@ -17,24 +19,26 @@ type
     FAngle: integer; { угол }
     Canvas: TCanvas; // на нем рисуем
     FSelected: boolean;
+    FOnDraw: TDrawEvent;
     procedure SetSelection(Value: boolean);
-    procedure DrawSelection;// virtual;
-    procedure SetSize(const Value: integer);// virtual; { изменить размер }
-    procedure SetAngle(const Value: integer);// virtual; { повернуть }
+    procedure SetSize(const Value: integer); // virtual; { изменить размер }
+    procedure SetAngle(const Value: integer); // virtual; { повернуть }
     procedure SetColor(const Value: integer); { повернуть }
   public
+    procedure DrawSelection; // virtual;
     procedure Draw; virtual; { показать }
-    procedure Hide;// virtual; { стереть }
+    procedure Hide; // virtual; { стереть }
     constructor Create(aX, aY, AColor: integer; ACanvas: TCanvas;
       aSize: integer = 1; aAngle: integer = 0); { создать }
     destructor Destroy; override; { удалить }
     procedure Shift(aX, aY: integer); { подвинуть }
     function PointInFugure(aX, aY: integer): boolean; virtual;
+    function Info: string;
     property Selected: boolean read FSelected write SetSelection;
     property Color: integer read FColor write SetColor;
     property Angle: integer read FAngle write SetAngle;
     property Size: integer read FSize write SetSize;
-    function Info: string;
+    property OnDraw: TDrawEvent read FOnDraw write FOnDraw;
   end;
 
   TCircle = class(TDot)
@@ -176,6 +180,8 @@ begin
   Canvas.Pen.Color := FColor;
   Canvas.Rectangle(X - 1, Y - 1, X + 2, Y + 2);
   Canvas.Pixels[X, Y] := Color;
+  if Assigned(FOnDraw) then
+    FOnDraw(self);
 end;
 
 procedure TDot.DrawSelection;
@@ -196,17 +202,11 @@ end;
 
 procedure TCircle.Draw;
 begin
-
   Canvas.Pen.Color := FColor;
   Canvas.Ellipse(X - FSize, Y - FSize, X + FSize, Y + FSize);
+  if Assigned(FOnDraw) then
+    FOnDraw(self);
 end;
-
-// procedure TCircle.DrawBorder(AColor: integer);
-// begin
-// Canvas.Pen.Color := AColor;
-// Canvas.Ellipse(X - FSize - 1, Y - FSize - 1, X + FSize + 1, Y + FSize + 1);
-// Canvas.Ellipse(X - FSize + 1, Y - FSize + 1, X + FSize - 1, Y + FSize - 1);
-// end;
 
 function TCircle.PointInFugure(aX, aY: integer): boolean;
 begin
@@ -243,23 +243,24 @@ end;
 
 procedure TList.DeleteItem(AItem: PListItem);
 var
-  ListItem: PListItem;
+  ListItem, NextItem: PListItem;
 begin
   if FirstItem = AItem then
   begin
-    AItem.NextItem := FirstItem.NextItem;
+    ListItem := FirstItem.NextItem;
     FreeAndNil(FirstItem.Item);
     Dispose(FirstItem);
-    FirstItem := AItem;
+    FirstItem := ListItem;
     exit;
   end;
   ListItem := FirstItem;
   repeat
     if ListItem.NextItem = AItem then
     begin
+      NextItem := ListItem.NextItem;
       ListItem.NextItem := ListItem.NextItem.NextItem;
-      FreeAndNil(ListItem.Item);
-      Dispose(ListItem);
+      FreeAndNil(NextItem.Item);
+      Dispose(NextItem);
       exit;
     end;
     ListItem := ListItem.NextItem;
@@ -287,7 +288,6 @@ function TList.IsEmpty: boolean;
 begin
   result := FirstItem = nil;
 end;
-
 
 procedure TList.Reset;
 begin
@@ -321,26 +321,9 @@ begin
   Canvas.LineTo(x3, y3);
   Canvas.LineTo(x4, y4);
   Canvas.LineTo(x1, y1);
+  if Assigned(FOnDraw) then
+    FOnDraw(self);
 end;
-
-// procedure TSquare.DrawBorder(AColor: integer);
-// var x1, y1, x2, y2: integer;
-// begin
-/// /  Canvas.Pen.Color := AColor;
-/// /  x1 := X - FSize;
-/// /  y1 := Y - FSize;
-/// /  x2 := X + FSize;
-/// /  y2 := Y + FSize;
-/// /  x1 := x1 + Round(FSize * (Cos(FAngle) / 180 * pi));
-/// /  y1 := y1 - Round(FSize * (Sin(FAngle) / 180 * pi));
-/// /  x2 := x2 + Round(FSize * (Cos(FAngle) / 180 * pi));
-/// /  y2 := y2 - Round(FSize * (Sin(FAngle) / 180 * pi));
-/// /  Canvas.MoveTo(x1, y1);
-/// /  Canvas.LineTo(x2, y1);
-/// /  Canvas.LineTo(x2, y2);
-/// /  Canvas.LineTo(x1, y2);
-/// /  Canvas.LineTo(x1, y1);
-// end;
 
 function TSquare.PointInFugure(aX, aY: integer): boolean;
 begin
@@ -377,59 +360,9 @@ begin
     end;
     Canvas.LineTo(vX, vY);
   end;
+  if Assigned(FOnDraw) then
+    FOnDraw(self);
 end;
-
-// procedure TStar.DrawBorder(AColor: integer);
-// var
-// i, vX, vY, AngleStep, VertexCount, VertexHeight, inSize, outSize: integer;
-// begin
-// inSize := FSize - 4;
-// outSize := FSize + 4;
-// Canvas.Pen.Color := AColor;
-// VertexCount := 5;
-// VertexHeight := Round(0.6 * inSize);
-// vX := X + Round(Cos(FAngle / 180 * pi) * inSize);
-// vY := Y - Round(Sin(FAngle / 180 * pi) * inSize);
-// Canvas.MoveTo(vX, vY);
-// AngleStep := Round(360 / (VertexCount * 2));
-// for i := 1 to VertexCount * 2 do
-// begin
-// if (i mod 2 = 0) then
-// begin
-// vX := X + Round(Cos((AngleStep * i + FAngle) / 180 * pi) * inSize);
-// vY := Y - Round(Sin((AngleStep * i + FAngle) / 180 * pi) * inSize);
-// end
-// else
-// begin
-// vX := X + Round(Cos((AngleStep * i + FAngle) / 180 * pi) *
-// (inSize - VertexHeight));
-// vY := Y - Round(Sin((AngleStep * i + FAngle) / 180 * pi) *
-// (inSize - VertexHeight));
-// end;
-// Canvas.LineTo(vX, vY);
-// end;
-// VertexHeight := Round(0.6 * outSize);
-// vX := X + Round(Cos(FAngle / 180 * pi) * outSize);
-// vY := Y - Round(Sin(FAngle / 180 * pi) * outSize);
-// Canvas.MoveTo(vX, vY);
-// AngleStep := Round(360 / (VertexCount * 2));
-// for i := 1 to VertexCount * 2 do
-// begin
-// if (i mod 2 = 0) then
-// begin
-// vX := X + Round(Cos((AngleStep * i + FAngle) / 180 * pi) * outSize);
-// vY := Y - Round(Sin((AngleStep * i + FAngle) / 180 * pi) * outSize);
-// end
-// else
-// begin
-// vX := X + Round(Cos((AngleStep * i + FAngle) / 180 * pi) *
-// (outSize - VertexHeight));
-// vY := Y - Round(Sin((AngleStep * i + FAngle) / 180 * pi) *
-// (outSize - VertexHeight));
-// end;
-// Canvas.LineTo(vX, vY);
-// end;
-// end;
 
 function Intersection(ax1, ay1, ax2, ay2, bx1, by1, bx2, by2: real): boolean;
 var
