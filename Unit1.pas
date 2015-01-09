@@ -30,6 +30,10 @@ type
     Button4: TButton;
     Button5: TButton;
     ToolButton5: TToolButton;
+    bOKSize: TButton;
+    bOKAngle: TButton;
+    bColorOk: TButton;
+    Label4: TLabel;
     procedure Button1Click(Sender: TObject);
     procedure Form1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -39,7 +43,10 @@ type
     procedure bDeleteClick(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
-    procedure edSizeChange(Sender: TObject);
+    procedure edSizeExit(Sender: TObject);
+    procedure bOKSizeClick(Sender: TObject);
+    procedure bOKAngleClick(Sender: TObject);
+    procedure bColorOkClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -71,11 +78,28 @@ begin
     Label1.Color := ColorDialog1.Color;
 end;
 
+procedure TForm1.bColorOkClick(Sender: TObject);
+begin
+  if not FigureList.IsEmpty then
+    FigureList.CurrentItem.Item.Color := ColorDialog1.Color;
+end;
+
 procedure TForm1.bDeleteClick(Sender: TObject);
 begin
-  if not Assigned(FigureList) then
-    FigureList := TList.Create;
-  FigureList.DeleteSelectedItem;
+  if not FigureList.IsEmpty then
+    FigureList.DeleteItem(FigureList.CurrentItem);
+end;
+
+procedure TForm1.bOKAngleClick(Sender: TObject);
+begin
+  if not FigureList.IsEmpty then
+    FigureList.CurrentItem.Item.Angle := StrToInt(edAngle.Text);
+end;
+
+procedure TForm1.bOKSizeClick(Sender: TObject);
+begin
+  if not FigureList.IsEmpty then
+    FigureList.CurrentItem.Item.Size := StrToInt(edSize.Text);
 end;
 
 procedure TForm1.Button4Click(Sender: TObject);
@@ -100,7 +124,7 @@ end;
 
 procedure TForm1.Button5Click(Sender: TObject);
 var
-  i, r, X, Y, step, angle: Integer;
+  i, r, X, Y, step, Angle: Integer;
   Vertex: TPoint;
   VertexCount: Integer;
 
@@ -116,18 +140,18 @@ begin
   Y := Vertex.Y;
   Form1.Canvas.MoveTo(Vertex.X, Vertex.Y);
   step := Round(360 / (VertexCount * 2));
-  angle := 270;
+  Angle := 270;
   for i := 1 to VertexCount * 2 do
   begin
     if (i mod 2 = 0) then
     begin
-      X := 300 + Round(Cos((step * i + angle) / 180 * pi) * r);
-      Y := 300 - Round(Sin((step * i + angle) / 180 * pi) * r);
+      X := 300 + Round(Cos((step * i + Angle) / 180 * pi) * r);
+      Y := 300 - Round(Sin((step * i + Angle) / 180 * pi) * r);
     end
     else
     begin
-      X := 300 + Round(Cos((step * i + angle) / 180 * pi) * (r / 3));
-      Y := 300 - Round(Sin((step * i + angle) / 180 * pi) * (r / 3));
+      X := 300 + Round(Cos((step * i + Angle) / 180 * pi) * (r / 3));
+      Y := 300 - Round(Sin((step * i + Angle) / 180 * pi) * (r / 3));
     end;
 
     Sleep(50);
@@ -135,23 +159,10 @@ begin
   end;
 end;
 
-procedure TForm1.edSizeChange(Sender: TObject);
-var
-  ListItem: PListItem;
+procedure TForm1.edSizeExit(Sender: TObject);
 begin
   if edSize.Text = '' then
     edSize.Text := '0';
-  if FigureList.FirstItem = nil then
-    exit;
-  ListItem := FigureList.FirstItem;
-  repeat
-    if ListItem.Item.Selected then
-    begin
-      ListItem.Item.Size := StrToInt(edSize.Text);
-      exit;
-    end;
-    ListItem := ListItem.NextItem;
-  until ListItem = nil;
 end;
 
 procedure TForm1.Form1MouseUp(Sender: TObject; Button: TMouseButton;
@@ -162,7 +173,7 @@ var
   Square: TSquare;
   Star: TStar;
   ListItem, NextItem: PListItem;
-  f: boolean;
+  FigureSelected: boolean;
 begin
   ClickPos.X := X;
   ClickPos.Y := Y;
@@ -172,63 +183,62 @@ begin
   begin
     if ToolButton1.Down then
     begin
-
+      if FigureList.IsEmpty then
+        exit;
+      FigureList.Reset;
+      ListItem := FigureList.CurrentItem;
+      FigureSelected := false;
+      repeat
+        if not FigureSelected then
+        begin
+          ListItem.Item.Selected := ListItem.Item.PointInFugure(X, Y);
+          FigureList.CurrentItem := ListItem;
+          edInfo.Text := ListItem.Item.Info;
+          FigureSelected := ListItem.Item.Selected;
+        end
+        else
+          ListItem.Item.Selected := false;
+        ListItem := ListItem.NextItem;
+      until ListItem = nil;
     end;
     if ToolButton2.Down then
     begin
+      if not FigureList.IsEmpty then
+        FigureList.CurrentItem.Item.Selected := false;
       Point := TDot.Create(X, Y, Label1.Color, Form1.Canvas);
       FigureList.AddItem(Point);
     end;
     if ToolButton3.Down then
     begin
+      if not FigureList.IsEmpty then
+        FigureList.CurrentItem.Item.Selected := false;
       Circle := TCircle.Create(X, Y, Label1.Color, Form1.Canvas,
         StrToInt(edSize.Text));
       FigureList.AddItem(Circle);
     end;
     if ToolButton4.Down then
     begin
+      if not FigureList.IsEmpty then
+        FigureList.CurrentItem.Item.Selected := false;
       Square := TSquare.Create(X, Y, Label1.Color, Form1.Canvas,
         StrToInt(edSize.Text), StrToInt(edAngle.Text));
       FigureList.AddItem(Square);
     end;
     if ToolButton5.Down then
     begin
+      if not FigureList.IsEmpty then
+        FigureList.CurrentItem.Item.Selected := false;
       Star := TStar.Create(X, Y, Label1.Color, Form1.Canvas,
         StrToInt(edSize.Text), StrToInt(edAngle.Text));
       FigureList.AddItem(Star);
     end;
-    if FigureList.FirstItem = nil then
-      exit;
-    ListItem := FigureList.FirstItem;
-    f := false;
-    repeat
-      NextItem := ListItem.NextItem;
-      if ListItem.Item.PointInFugure(X, Y) and (not f) then
-      begin
-        ListItem.Item.Selected := true;
-        f := true;
-      end
-      else
-        ListItem.Item.Selected := false;
-      if ListItem.Item.Selected then
-        edInfo.Text := ListItem.Item.Info;
-      ListItem := NextItem;
-    until ListItem = nil;
   end;
 end;
 
 procedure TForm1.N1Click(Sender: TObject);
-var
-  ListItem, NextItem: PListItem;
 begin
-  if FigureList.FirstItem = nil then
-    exit;
-  ListItem := FigureList.FirstItem;
-  repeat
-    if ListItem.Item.Selected then
-      ListItem.Item.Shift(ClickPos.X, ClickPos.Y);
-    ListItem := ListItem.NextItem;
-  until ListItem = nil;
+  if not FigureList.IsEmpty then
+    FigureList.CurrentItem.Item.Shift(ClickPos.X, ClickPos.Y);
 end;
 
 end.

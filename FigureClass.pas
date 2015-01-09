@@ -18,13 +18,13 @@ type
     Canvas: TCanvas; // на нем рисуем
     FSelected: boolean;
     procedure SetSelection(Value: boolean);
-    procedure DrawSelection; virtual;
-    procedure SetSize(Value: integer); virtual; { изменить размер }
-    procedure SetAngle(Value: integer); virtual;
+    procedure DrawSelection;// virtual;
+    procedure SetSize(const Value: integer);// virtual; { изменить размер }
+    procedure SetAngle(const Value: integer);// virtual; { повернуть }
     procedure SetColor(const Value: integer); { повернуть }
   public
     procedure Draw; virtual; { показать }
-    procedure Hide; virtual; { стереть }
+    procedure Hide;// virtual; { стереть }
     constructor Create(aX, aY, AColor: integer; ACanvas: TCanvas;
       aSize: integer = 1; aAngle: integer = 0); { создать }
     destructor Destroy; override; { удалить }
@@ -34,28 +34,22 @@ type
     property Color: integer read FColor write SetColor;
     property Angle: integer read FAngle write SetAngle;
     property Size: integer read FSize write SetSize;
-    function Info: string; virtual;
+    function Info: string;
   end;
 
   TCircle = class(TDot)
-  private
-    // procedure DrawBorder(AColor: integer); override;
   public
     procedure Draw; override;
     function PointInFugure(aX, aY: integer): boolean; override;
   end;
 
   TSquare = class(TDot)
-  private
-    // procedure DrawBorder(AColor: integer); override;
   public
     procedure Draw; override;
     function PointInFugure(aX, aY: integer): boolean; override;
   end;
 
   TStar = class(TDot)
-  private
-    // procedure DrawBorder(AColor: integer); override;
   public
     procedure Draw; override;
     function PointInFugure(aX, aY: integer): boolean; override;
@@ -69,21 +63,26 @@ type
   end;
 
   TList = class
-  public
+  private
     FirstItem: PListItem;
-    constructor Create(AFirstItem: PListItem = nil);
+  public
+    CurrentItem: PListItem;
+    function IsEmpty: boolean;
+    procedure Reset;
+    constructor Create;
     destructor Destroy; override;
     procedure AddItem(AItem: TDot);
-    procedure DeleteSelectedItem;
+    procedure DeleteItem(AItem: PListItem);
   end;
 
 implementation
 
-procedure TDot.SetSize(Value: integer);
+procedure TDot.SetSize(const Value: integer);
 begin
   Hide;
   FSize := Value;
   Draw;
+  DrawSelection;
 end;
 
 constructor TDot.Create(aX, aY, AColor: integer; ACanvas: TCanvas;
@@ -116,7 +115,7 @@ begin
   { нарисуем класс с 0-м цветом (стираем) }
   if FSelected then
   begin
-    FSelected := false;
+    FSelected := False;
     DrawSelection;
     FSelected := true; ;
   end;
@@ -136,11 +135,12 @@ begin
   result := (Abs(aX - X) < 3) and (Abs(aY - Y) < 3);
 end;
 
-procedure TDot.SetAngle(Value: integer);
+procedure TDot.SetAngle(const Value: integer);
 begin
   Hide;
   FAngle := Value;
   Draw;
+  DrawSelection;
 end;
 
 procedure TDot.SetColor(const Value: integer);
@@ -148,6 +148,7 @@ begin
   Hide;
   FColor := Value;
   Draw;
+  DrawSelection;
 end;
 
 procedure TDot.SetSelection(Value: boolean);
@@ -231,37 +232,38 @@ begin
       Tmp := Tmp.NextItem;
     Tmp.NextItem := ListItem;
   end;
+  CurrentItem := ListItem;
 end;
 
-constructor TList.Create(AFirstItem: PListItem);
+constructor TList.Create;
 begin
-  FirstItem := AFirstItem;
+  FirstItem := nil;
+  CurrentItem := nil;
 end;
 
-procedure TList.DeleteSelectedItem;
+procedure TList.DeleteItem(AItem: PListItem);
 var
-  ListItem, PrevItem, NextItem: PListItem;
+  ListItem: PListItem;
 begin
-  if FirstItem <> nil then
+  if FirstItem = AItem then
   begin
-    ListItem := FirstItem;
-    PrevItem := nil;
-    repeat
-      NextItem := ListItem.NextItem;
-      if ListItem.Item.Selected then
-      begin
-        if PrevItem <> nil then
-          PrevItem.NextItem := ListItem.NextItem
-        else
-          FirstItem := ListItem.NextItem;
-        FreeAndNil(ListItem.Item);
-        Dispose(ListItem);
-      end;
-      PrevItem := ListItem;
-      ListItem := NextItem;
-    until ListItem = nil;
+    AItem.NextItem := FirstItem.NextItem;
+    FreeAndNil(FirstItem.Item);
+    Dispose(FirstItem);
+    FirstItem := AItem;
+    exit;
   end;
-
+  ListItem := FirstItem;
+  repeat
+    if ListItem.NextItem = AItem then
+    begin
+      ListItem.NextItem := ListItem.NextItem.NextItem;
+      FreeAndNil(ListItem.Item);
+      Dispose(ListItem);
+      exit;
+    end;
+    ListItem := ListItem.NextItem;
+  until ListItem = nil;
 end;
 
 destructor TList.Destroy;
@@ -279,6 +281,17 @@ begin
     until ListItem = nil;
   end;
   inherited;
+end;
+
+function TList.IsEmpty: boolean;
+begin
+  result := FirstItem = nil;
+end;
+
+
+procedure TList.Reset;
+begin
+  CurrentItem := FirstItem;
 end;
 
 { TSquare }
