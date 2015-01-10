@@ -15,7 +15,6 @@ type
     ToolButton2: TToolButton;
     ToolButton3: TToolButton;
     ToolButton4: TToolButton;
-    Button1: TButton;
     Panel2: TPanel;
     edInfo: TEdit;
     edSize: TEdit;
@@ -26,23 +25,17 @@ type
     edAngle: TEdit;
     Label3: TLabel;
     bDelete: TButton;
-    Button4: TButton;
-    Button5: TButton;
     ToolButton5: TToolButton;
     bOKSize: TButton;
     bOKAngle: TButton;
     bColorOk: TButton;
     Label4: TLabel;
-    Timer1: TTimer;
-    procedure Button1Click(Sender: TObject);
     procedure Form1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
     procedure N1Click(Sender: TObject);
     procedure bColorClick(Sender: TObject);
     procedure bDeleteClick(Sender: TObject);
-    procedure Button4Click(Sender: TObject);
-    procedure Button5Click(Sender: TObject);
     procedure edSizeExit(Sender: TObject);
     procedure bOKSizeClick(Sender: TObject);
     procedure bOKAngleClick(Sender: TObject);
@@ -50,6 +43,7 @@ type
     procedure edAngleExit(Sender: TObject);
     procedure RefreshInfo(Figure: TDot);
     procedure CanvasChange(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -65,7 +59,7 @@ implementation
 
 {$R *.dfm}
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   FreeAndNil(FigureList);
 end;
@@ -73,7 +67,6 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FigureList := TList.Create;
-  //Form1.Canvas.OnChange := Form1.CanvasChange;
 end;
 
 procedure TForm1.CanvasChange(Sender: TObject);
@@ -84,37 +77,36 @@ begin
     FigureList := TList.Create;
   if FigureList.IsEmpty then
     exit;
-  Form1.Canvas.OnChange := nil;
   FigureList.Reset;
   ListItem := FigureList.CurrentItem;
   repeat
-    ListItem.Item.OnDraw := nil;
     ListItem.Item.Draw;
     ListItem.Item.DrawSelection;
-    ListItem.Item.OnDraw := CanvasChange;
     if ListItem.Item.Selected then
       FigureList.CurrentItem := ListItem;
     ListItem := ListItem.NextItem;
   until ListItem = nil;
-  Form1.Canvas.OnChange := Form1.CanvasChange;
 end;
 
 procedure TForm1.bColorClick(Sender: TObject);
 begin
   if ColorDialog1.Execute then
     Label1.Color := ColorDialog1.Color;
+  CanvasChange(self);
 end;
 
 procedure TForm1.bColorOkClick(Sender: TObject);
 begin
   if not FigureList.IsEmpty then
     FigureList.CurrentItem.Item.Color := Label1.Color;
+   CanvasChange(self);
 end;
 
 procedure TForm1.bDeleteClick(Sender: TObject);
 begin
   if not FigureList.IsEmpty then
     FigureList.DeleteItem(FigureList.CurrentItem);
+ CanvasChange(self);
   FigureList.Reset;
   edInfo.Clear;
 end;
@@ -123,69 +115,14 @@ procedure TForm1.bOKAngleClick(Sender: TObject);
 begin
   if not FigureList.IsEmpty then
     FigureList.CurrentItem.Item.Angle := StrToInt(edAngle.Text);
+   CanvasChange(self);
 end;
 
 procedure TForm1.bOKSizeClick(Sender: TObject);
 begin
   if not FigureList.IsEmpty then
     FigureList.CurrentItem.Item.Size := StrToInt(edSize.Text);
-end;
-
-procedure TForm1.Button4Click(Sender: TObject);
-var
-  nx, ny: Integer;
-begin
-  // Form1.Canvas.MoveTo(300, 300);
-  // nx := 300; ny := 300;
-  // nx := nx + Round(Cos(36 / 180 * pi) * 100);  ny := ny - Round(Sin(36 / 180 * pi) * 100);
-  // Form1.Canvas.LineTo(nx, ny);
-  // nx := nx + Round(Cos(252 / 180 * pi) * 100);  ny := ny - Round(Sin(252 / 180 * pi) * 100);
-  // Form1.Canvas.LineTo(nx, ny);
-  // nx := nx + Round(Cos(108 / 180 * pi) * 100);  ny := ny - Round(Sin(108 / 180 * pi) * 100);
-  // Form1.Canvas.LineTo(nx, ny);
-  // nx := nx + Round(Cos(324 / 180 * pi) * 100);  ny := ny - Round(Sin(324 / 180 * pi) * 100);
-  // Form1.Canvas.LineTo(nx, ny);
-  // nx := nx + Round(Cos(180 / 180 * pi) * 100);  ny := ny - Round(Sin(180 / 180 * pi) * 100);
-  // Form1.Canvas.LineTo(nx, ny);
-  Form1.Canvas.MoveTo(300, 300);
-  Form1.Canvas.LineTo(301, 301);
-end;
-
-procedure TForm1.Button5Click(Sender: TObject);
-var
-  i, r, X, Y, step, Angle: Integer;
-  Vertex: TPoint;
-  VertexCount: Integer;
-
-begin
-  r := 100;
-  VertexCount := 5;
-  Form1.Canvas.Brush.Style := bsClear;
-  // Form1.Canvas.Ellipse(300 - r, 300 - r, 300 + r, 300 + r);
-  // Form1.Canvas.Ellipse(300 - Round(r / 3), 300 - Round(r / 3), 300 + Round(r / 3), 300 + Round(r / 3));
-  Vertex.X := 300;
-  Vertex.Y := 300 + r;
-  X := Vertex.X;
-  Y := Vertex.Y;
-  Form1.Canvas.MoveTo(Vertex.X, Vertex.Y);
-  step := Round(360 / (VertexCount * 2));
-  Angle := 270;
-  for i := 1 to VertexCount * 2 do
-  begin
-    if (i mod 2 = 0) then
-    begin
-      X := 300 + Round(Cos((step * i + Angle) / 180 * pi) * r);
-      Y := 300 - Round(Sin((step * i + Angle) / 180 * pi) * r);
-    end
-    else
-    begin
-      X := 300 + Round(Cos((step * i + Angle) / 180 * pi) * (r / 3));
-      Y := 300 - Round(Sin((step * i + Angle) / 180 * pi) * (r / 3));
-    end;
-
-    Sleep(50);
-    Form1.Canvas.LineTo(X, Y);
-  end;
+   CanvasChange(self);
 end;
 
 procedure TForm1.edAngleExit(Sender: TObject);
@@ -215,7 +152,7 @@ var
   Circle: TCircle;
   Square: TSquare;
   Star: TStar;
-  ListItem, NextItem: PListItem;
+  ListItem: PListItem;
   FigureSelected: boolean;
 begin
   ClickPos.X := X;
@@ -279,7 +216,7 @@ begin
       FigureList.AddItem(Star);
       RefreshInfo(Star);
     end;
-    FigureList.CurrentItem.Item.OnDraw := CanvasChange;
+   CanvasChange(self);
   end;
 end;
 
@@ -287,7 +224,7 @@ procedure TForm1.N1Click(Sender: TObject);
 begin
   if not FigureList.IsEmpty then
     FigureList.CurrentItem.Item.Shift(ClickPos.X, ClickPos.Y);
-  // Form1.CanvasChange(self);
+  Form1.CanvasChange(self);
 end;
 
 end.

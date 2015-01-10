@@ -15,9 +15,10 @@ object Form1: TForm1
   OldCreateOrder = False
   PopupMenu = PopupMenu1
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   OnMouseUp = Form1MouseUp
-  OnResize = CanvasChange
+  OnPaint = CanvasChange
   PixelsPerInch = 96
   TextHeight = 13
   object ToolBar1: TToolBar
@@ -45,7 +46,6 @@ object Form1: TForm1
     ShowHint = False
     TabOrder = 0
     Transparent = False
-    ExplicitWidth = 897
     object ToolButton1: TToolButton
       Left = 0
       Top = 0
@@ -96,8 +96,6 @@ object Form1: TForm1
     BevelOuter = bvNone
     ParentBackground = False
     TabOrder = 1
-    ExplicitLeft = 712
-    ExplicitHeight = 405
     object Label1: TLabel
       Left = 57
       Top = 84
@@ -177,33 +175,13 @@ object Form1: TForm1
       TabOrder = 4
       OnClick = bDeleteClick
     end
-    object Button4: TButton
-      Left = 96
-      Top = 337
-      Width = 75
-      Height = 25
-      Caption = 'Button4'
-      TabOrder = 5
-      Visible = False
-      OnClick = Button4Click
-    end
-    object Button5: TButton
-      Left = 96
-      Top = 368
-      Width = 75
-      Height = 25
-      Caption = 'Button5'
-      TabOrder = 6
-      Visible = False
-      OnClick = Button5Click
-    end
     object bOKSize: TButton
       Left = 144
       Top = 33
       Width = 33
       Height = 25
       Caption = #1054#1050
-      TabOrder = 7
+      TabOrder = 5
       OnClick = bOKSizeClick
     end
     object bOKAngle: TButton
@@ -212,7 +190,7 @@ object Form1: TForm1
       Width = 34
       Height = 25
       Caption = #1054#1050
-      TabOrder = 8
+      TabOrder = 6
       OnClick = bOKAngleClick
     end
     object bColorOk: TButton
@@ -221,18 +199,8 @@ object Form1: TForm1
       Width = 33
       Height = 25
       Caption = 'OK'
-      TabOrder = 9
+      TabOrder = 7
       OnClick = bColorOkClick
-    end
-    object Button1: TButton
-      Left = 96
-      Top = 306
-      Width = 81
-      Height = 25
-      Caption = #1059#1076#1072#1083#1080#1090#1100' '#1074#1089#1077
-      TabOrder = 10
-      Visible = False
-      OnClick = Button1Click
     end
   end
   object PopupMenu1: TPopupMenu
@@ -246,11 +214,5 @@ object Form1: TForm1
   object ColorDialog1: TColorDialog
     Left = 656
     Top = 80
-  end
-  object Timer1: TTimer
-    Enabled = False
-    Interval = 50
-    Left = 704
-    Top = 168
   end
 end

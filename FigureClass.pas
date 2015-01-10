@@ -164,8 +164,6 @@ begin
 end;
 
 procedure TDot.Shift(aX, aY: integer);
-var
-  TmpSelected: boolean;
 begin
   Hide; { сотрем со старыми координатами }
   X := aX;
@@ -377,7 +375,7 @@ end;
 
 function TStar.PointInFugure(aX, aY: integer): boolean;
 var
-  i, j, x1, x2, y1, y2, x0, y0: integer;
+  i, x1, x2, y1, y2, x0, y0: integer;
   vX, vY, AngleStep, VertexCount, VertexHeight, IntersectCount: integer;
 begin
   IntersectCount := 0;
@@ -391,18 +389,18 @@ begin
   y1 := vY;
   Canvas.MoveTo(vX, vY);
   AngleStep := Round(360 / (VertexCount * 2));
-  for j := 1 to VertexCount * 2 do
+  for i := 1 to VertexCount * 2 do
   begin
-    if (j mod 2 = 0) then
+    if (i mod 2 = 0) then
     begin
-      vX := X + Round(Cos((AngleStep * j + FAngle) / 180 * pi) * FSize);
-      vY := Y - Round(Sin((AngleStep * j + FAngle) / 180 * pi) * FSize);
+      vX := X + Round(Cos((AngleStep * i + FAngle) / 180 * pi) * FSize);
+      vY := Y - Round(Sin((AngleStep * i + FAngle) / 180 * pi) * FSize);
     end
     else
     begin
-      vX := X + Round(Cos((AngleStep * j + FAngle) / 180 * pi) *
+      vX := X + Round(Cos((AngleStep * i + FAngle) / 180 * pi) *
           (FSize - VertexHeight));
-      vY := Y - Round(Sin((AngleStep * j + FAngle) / 180 * pi) *
+      vY := Y - Round(Sin((AngleStep * i + FAngle) / 180 * pi) *
           (FSize - VertexHeight));
     end;
     x2 := vX;
