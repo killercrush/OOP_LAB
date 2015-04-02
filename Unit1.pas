@@ -44,6 +44,7 @@ type
     procedure RefreshInfo(Figure: TDot);
     procedure CanvasChange(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
   public
@@ -67,6 +68,21 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   FigureList := TList.Create;
+end;
+
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+if FigureList.IsEmpty then
+  exit;
+if Key = VK_RIGHT then
+FigureList.CurrentItem.Item.Selected := false;
+if FigureList.CurrentItem.NextItem = nil then
+  FigureList.CurrentItem := FigureList.GetFirstItem
+else
+  FigureList.CurrentItem := FigureList.CurrentItem.NextItem;
+FigureList.CurrentItem.Item.Selected := true;
+RefreshInfo(FigureList.CurrentItem.Item);
 end;
 
 procedure TForm1.CanvasChange(Sender: TObject);

@@ -72,6 +72,7 @@ type
   public
     CurrentItem: PListItem;
     function IsEmpty: boolean;
+    function GetFirstItem: PListItem;
     procedure Reset;
     constructor Create;
     destructor Destroy; override;
@@ -280,6 +281,11 @@ begin
     until ListItem = nil;
   end;
   inherited;
+end;
+
+function TList.GetFirstItem: PListItem;
+begin
+  result := FirstItem;
 end;
 
 function TList.IsEmpty: boolean;

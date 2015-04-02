@@ -12,11 +12,13 @@ object Form1: TForm1
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   PopupMenu = PopupMenu1
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
+  OnKeyDown = FormKeyDown
   OnMouseUp = Form1MouseUp
   OnPaint = CanvasChange
   PixelsPerInch = 96
