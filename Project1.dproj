@@ -49,6 +49,9 @@
 			</DCCReference>
 			<DCCReference Include="FigureClass.pas"/>
 			<DCCReference Include="FastMM4Messages.pas"/>
+			<DCCReference Include="ABOUT.pas">
+				<Form>AboutBox</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

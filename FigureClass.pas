@@ -8,7 +8,8 @@ type
   PPoint = ^TDot;
   PCircle = ^TCircle;
 
-  TDrawEvent = procedure (Sender: TObject) of object;
+  TDrawEvent = procedure(Sender: TObject) of object;
+  TDotClass = class of TDot;
 
   TDot = class
   private { приватные поля и методы }
@@ -142,18 +143,18 @@ end;
 
 procedure TDot.SetAngle(const Value: integer);
 begin
-  Hide;
+//  Hide;
   FAngle := Value;
-  Draw;
-  DrawSelection;
+//  Draw;
+//  DrawSelection;
 end;
 
 procedure TDot.SetColor(const Value: integer);
 begin
-  Hide;
+//  Hide;
   FColor := Value;
-  Draw;
-  DrawSelection;
+//  Draw;
+//  DrawSelection;
 end;
 
 procedure TDot.SetSelection(Value: boolean);
@@ -166,11 +167,11 @@ end;
 
 procedure TDot.Shift(aX, aY: integer);
 begin
-  Hide; { сотрем со старыми координатами }
+//  Hide; { сотрем со старыми координатами }
   X := aX;
   Y := aY;
-  Draw; { нарисуем с новыми координатами }
-  DrawSelection;
+//  Draw; { нарисуем с новыми координатами }
+//  DrawSelection;
 end;
 
 procedure TDot.Draw;
@@ -190,9 +191,9 @@ begin
   TmpColor := Color;
   if not FSelected then
     FColor := $FFFFFF;
-  Canvas.Pen.Width := 2;
+  Canvas.Pen.Width := 4;
   Draw;
-  Canvas.Pen.Width := 1;
+  Canvas.Pen.Width := 2;
   FColor := TmpColor;
   Draw;
 end;
