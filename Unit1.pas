@@ -36,7 +36,7 @@ type
     Timer1: TTimer;
     Image1: TImage;
     N5: TMenuItem;
-    Memo1: TMemo;
+    RichEdit1: TRichEdit;
     procedure Form1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
@@ -62,6 +62,7 @@ type
     procedure ClearCanvas;
     procedure N5Click(Sender: TObject);
   private
+    procedure CMDialogKey(var msg: TCMDialogKey); message CM_DIALOGKEY;
     { Private declarations }
   public
     { Public declarations }
@@ -79,6 +80,12 @@ implementation
 
 uses ABOUT, Unit2;
 {$R *.dfm}
+
+procedure TForm1.CMDialogKey(var msg: TCMDialogKey);
+begin
+  if msg.Charcode <> VK_TAB then
+    inherited;
+end;
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -99,6 +106,7 @@ procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
 var
   X, Y, Size, Color, Angle, Step: Integer;
   tb: TTrackBar;
+  Fgr: TDot;
 begin
   if not Assigned(FigureList) then
     FigureList := TList.Create;
@@ -107,16 +115,6 @@ begin
   X := Random(Buf.Width - 2 * Size) + Size;
   Y := Random(Buf.Height - 2 * Size) + Size;
   Color := RGB(Random(256), Random(256), Random(256));
-  case Key of
-    49:
-      MakeFigure(TCircle, X, Y, Color, Canv, Size);
-    50:
-      MakeFigure(TSquare, X, Y, Color, Canv, Size, Angle);
-    51:
-      MakeFigure(TStar, X, Y, Color, Canv, Size, Angle);
-  end;
-  if FigureList.IsEmpty then
-    exit;
   Step := 10;
   tb := tbSize;
   if ssShift in Shift then
@@ -127,21 +125,37 @@ begin
   if ssCtrl in Shift then
     Step := 1;
   case Key of
-    VK_RIGHT:
-      FigureList.CurrentItem.Item.Shift(Step, 0);
-    VK_LEFT:
-      FigureList.CurrentItem.Item.Shift(-Step, 0);
-    VK_UP:
-      FigureList.CurrentItem.Item.Shift(0, -Step);
-    VK_DOWN:
-      FigureList.CurrentItem.Item.Shift(0, Step);
+    49:
+      MakeFigure(TCircle, X, Y, Color, Canv, Size);
+    50:
+      MakeFigure(TSquare, X, Y, Color, Canv, Size, Angle);
+    51:
+      MakeFigure(TStar, X, Y, Color, Canv, Size, Angle);
+    VK_SPACE:
+      bColor.Click;
+    VK_TAB:
+      bNext.Click;
+    VK_DELETE:
+      bDelete.Click;
     VK_ADD:
       tb.Position := tb.Position + 1;
     VK_SUBTRACT:
       tb.Position := tb.Position - 1;
-    VK_SPACE:
-      bColor.Click;
   end;
+  if FigureList.IsEmpty then
+    exit;
+  Fgr := FigureList.CurrentItem.Item;
+  if Fgr.Selected then
+    case Key of
+      VK_RIGHT:
+        Fgr.Shift(Step, 0);
+      VK_LEFT:
+        Fgr.Shift(-Step, 0);
+      VK_UP:
+        Fgr.Shift(0, -Step);
+      VK_DOWN:
+        Fgr.Shift(0, Step);
+    end;
   IsCanvasChanged := true;
 end;
 
