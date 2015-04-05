@@ -32,6 +32,7 @@ type
     constructor Create(aX, aY, AColor: integer; ACanvas: TCanvas;
       aSize: integer = 1; aAngle: integer = 0); { создать }
     destructor Destroy; override; { удалить }
+    procedure MoveTo(aX, aY: integer); { подвинуть }
     procedure Shift(aX, aY: integer); { подвинуть }
     function PointInFugure(aX, aY: integer): boolean; virtual;
     function Info: string;
@@ -136,6 +137,12 @@ begin
   result := ClassName + ' X:' + IntToStr(X) + ' Y:' + IntToStr(Y);
 end;
 
+procedure TDot.MoveTo(aX, aY: integer);
+begin
+  X := aX;
+  Y := aY;
+end;
+
 function TDot.PointInFugure(aX, aY: integer): boolean;
 begin
   result := (Abs(aX - X) < 3) and (Abs(aY - Y) < 3);
@@ -168,8 +175,8 @@ end;
 procedure TDot.Shift(aX, aY: integer);
 begin
 //  Hide; { сотрем со старыми координатами }
-  X := aX;
-  Y := aY;
+  X := X + aX;
+  Y := Y + aY;
 //  Draw; { нарисуем с новыми координатами }
 //  DrawSelection;
 end;

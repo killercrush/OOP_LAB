@@ -36,6 +36,7 @@ type
     Timer1: TTimer;
     Image1: TImage;
     N5: TMenuItem;
+    Memo1: TMemo;
     procedure Form1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
@@ -89,17 +90,59 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   FigureList := TList.Create;
   Buf := TBitmap.Create;
-  Canv := Buf.Canvas; // PaintBox1.Canvas;
-  // Canv.Handle := GetWindowDC(Form2.Handle);
+  Canv := Buf.Canvas;
+  Randomize;
 end;
 
 procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
+var
+  X, Y, Size, Color, Angle, Step: Integer;
+  tb: TTrackBar;
 begin
+  if not Assigned(FigureList) then
+    FigureList := TList.Create;
+  Size := Random(50) + 50; // Random(tbSize.Max - tbSize.Min) + tbSize.Min;
+  Angle := Random(tbAngle.Max - tbAngle.Min) + tbAngle.Min;
+  X := Random(Buf.Width - 2 * Size) + Size;
+  Y := Random(Buf.Height - 2 * Size) + Size;
+  Color := RGB(Random(256), Random(256), Random(256));
+  case Key of
+    49:
+      MakeFigure(TCircle, X, Y, Color, Canv, Size);
+    50:
+      MakeFigure(TSquare, X, Y, Color, Canv, Size, Angle);
+    51:
+      MakeFigure(TStar, X, Y, Color, Canv, Size, Angle);
+  end;
+  if FigureList.IsEmpty then
+    exit;
+  Step := 10;
+  tb := tbSize;
+  if ssShift in Shift then
+  begin
+    Step := 50;
+    tb := tbAngle;
+  end;
+  if ssCtrl in Shift then
+    Step := 1;
   case Key of
     VK_RIGHT:
-      bNext.Click;
+      FigureList.CurrentItem.Item.Shift(Step, 0);
+    VK_LEFT:
+      FigureList.CurrentItem.Item.Shift(-Step, 0);
+    VK_UP:
+      FigureList.CurrentItem.Item.Shift(0, -Step);
+    VK_DOWN:
+      FigureList.CurrentItem.Item.Shift(0, Step);
+    VK_ADD:
+      tb.Position := tb.Position + 1;
+    VK_SUBTRACT:
+      tb.Position := tb.Position - 1;
+    VK_SPACE:
+      bColor.Click;
   end;
+  IsCanvasChanged := true;
 end;
 
 procedure TForm1.FormResize(Sender: TObject);
@@ -121,16 +164,13 @@ begin
     FigureList.Reset;
     ListItem := FigureList.CurrentItem;
     repeat
-      ListItem.Item.Hide;
       ListItem.Item.Draw;
       ListItem.Item.DrawSelection;
-      // if ListItem.Item.Selected then
-      // FigureList.CurrentItem := ListItem;
       ListItem := ListItem.NextItem;
     until ListItem = nil;
     FigureList.CurrentItem := CurrItem;
   end;
-  Image1.Picture.Bitmap := Buf; // Canvas.CopyRect(Image1.Canvas.ClipRect, Canv, Canv.ClipRect);
+  Image1.Picture.Bitmap := Buf;
 end;
 
 procedure TForm1.ClearCanvas;
@@ -153,7 +193,6 @@ begin
   if (not FigureList.IsEmpty) and (FigureList.CurrentItem.Item.Selected) then
     FigureList.CurrentItem.Item.Color := Label1.Color;
   IsCanvasChanged := true;
-  // CanvasChange(self);
 end;
 
 procedure TForm1.bColorOkClick(Sender: TObject);
@@ -161,7 +200,6 @@ begin
   if (not FigureList.IsEmpty) and (FigureList.CurrentItem.Item.Selected) then
     FigureList.CurrentItem.Item.Color := Label1.Color;
   IsCanvasChanged := true;
-  // CanvasChange(self);
 end;
 
 procedure TForm1.bDeleteClick(Sender: TObject);
@@ -169,7 +207,6 @@ begin
   if (not FigureList.IsEmpty) and (FigureList.CurrentItem.Item.Selected) then
     FigureList.DeleteItem(FigureList.CurrentItem);
   IsCanvasChanged := true;
-  // CanvasChange(self);
   FigureList.Reset;
   edInfo.Clear;
 end;
@@ -204,7 +241,6 @@ begin
   if (not FigureList.IsEmpty) and (FigureList.CurrentItem.Item.Selected) then
     FigureList.CurrentItem.Item.Angle := tbAngle.Position;
   IsCanvasChanged := true;
-  // CanvasChange(self);
 end;
 
 procedure TForm1.tbAngleEnter(Sender: TObject);
@@ -217,7 +253,6 @@ begin
   if (not FigureList.IsEmpty) and (FigureList.CurrentItem.Item.Selected) then
     FigureList.CurrentItem.Item.Size := tbSize.Position;
   IsCanvasChanged := true;
-  // CanvasChange(self);
 end;
 
 procedure TForm1.tbSizeEnter(Sender: TObject);
@@ -247,17 +282,13 @@ end;
 procedure TForm1.Form1MouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  Point: TDot;
-  Circle: TCircle;
-  Square: TSquare;
-  Star: TStar;
   ListItem: PListItem;
   FigureSelected: boolean;
 begin
-  ClickPos.X := X;
-  ClickPos.Y := Y;
   if not Assigned(FigureList) then
     FigureList := TList.Create;
+  ClickPos.X := X;
+  ClickPos.Y := Y;
   if Button = mbLeft then
   begin
     if ToolButton1.Down then
@@ -291,16 +322,14 @@ begin
       MakeFigure(TStar, X, Y, Label1.Color, Canv, tbSize.Position,
         tbAngle.Position);
     IsCanvasChanged := true;
-    // CanvasChange(self);
   end;
 end;
 
 procedure TForm1.N1Click(Sender: TObject);
 begin
   if (not FigureList.IsEmpty) and (FigureList.CurrentItem.Item.Selected) then
-    FigureList.CurrentItem.Item.Shift(ClickPos.X, ClickPos.Y);
+    FigureList.CurrentItem.Item.MoveTo(ClickPos.X, ClickPos.Y);
   IsCanvasChanged := true;
-  // CanvasChange(self);
 end;
 
 procedure TForm1.N3Click(Sender: TObject);
